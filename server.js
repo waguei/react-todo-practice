@@ -35,6 +35,19 @@ function filterUnDone(obj) {
     return false;
   }
 }
+function formatDate(date) {
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var ampm = hours >= 12 ? 'pm' : 'am';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      minutes = minutes < 10 ? '0'+minutes : minutes
+      year = date.getFullYear(),
+      mounth = date.getMonth()+1,
+      day = date.getDate();
+  var strTime = hours + ':' + minutes + ' ' + ampm;
+  return year + "/" + mounth + "/" + day + "  " + strTime;
+}
 
 app.set('port', (process.env.PORT || 3000));
 
@@ -79,7 +92,9 @@ app.get('/api/done', function(req, res) {
 });
 
 app.post('/api/todos', function(req, res) {
-  fs.readFile(TODOS_FILE, function(err, data) {
+  fs.readFile(TODOS_FILE, function(err, data) {    
+    var d = new Date();
+    var e = formatDate(d);
     if (err) {
       console.error(err);
       process.exit(1);
@@ -92,6 +107,7 @@ app.post('/api/todos', function(req, res) {
       id: Date.now(),
       text: req.body.text,
       done: '',
+      date: e
     };
     todos.push(newTodo);
     fs.writeFile(TODOS_FILE, JSON.stringify(todos, null, 4), function(err) {

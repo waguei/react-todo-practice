@@ -2,8 +2,8 @@ var Todo = React.createClass({
   getInitialState: function(){
     return {done:''};
   },
-  handleCheckChange: function(e){
-    this.setState({done:e.target.checked})
+  toggleChecked: function(e) {
+    this.setState({ done: e.target.value});
   },
   rawMarkup: function(){
     var rawMarkup = marked(this.props.children.toString(), {sanitize:true});
@@ -15,9 +15,10 @@ var Todo = React.createClass({
         <input 
           type="checkbox" 
           checked={this.state.done || this.props.done } 
-          onChange={this.handleCheckChange}
+          onChange={this.toggleChecked}
         />
         <span className="todoItem" dangerouslySetInnerHTML={this.rawMarkup()} />
+        <span className="date">add @ {this.state.date || this.props.date } </span>
       </li>
     );
   }
@@ -116,7 +117,7 @@ var TodoList = React.createClass({
   render: function(){
     var todoNodes = this.props.data.map(function(todo){
       return (
-        <Todo key={todo.id} done={todo.done}>
+        <Todo key={todo.id} done={todo.done} date={todo.date}>
           {todo.text}
         </Todo>
       )
@@ -133,7 +134,7 @@ var TodoDoneList = React.createClass({
   render: function(){
     var todoNodes = this.props.data.map(function(todo){
       return (
-        <Todo key={todo.id} done={todo.done}>
+        <Todo key={todo.id} done={todo.done} date={todo.date}>
           {todo.text}
         </Todo>
       )

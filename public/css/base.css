@@ -82,3 +82,10 @@ em{
 .todoList, .todoListDone{
   paddint: 10px;
 }
+.date{
+  font-size: 10px;
+  display: block;
+  margin-top: -20px;
+  padding-left: 20px;
+  color: #bbb;
+}
