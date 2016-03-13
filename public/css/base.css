@@ -40,10 +40,12 @@ h1 {
   padding: 0;
 }
 
+/*
 h2 {
   border-bottom: 1px solid #eee;
   font-size: 2em;
 }
+*/
 
 h3 {
   font-size: 1.5em;
@@ -65,8 +67,18 @@ em{
 }
 
 .todoInput{
-	  width: 300px;
-    height: 30px;
-    margin: 10px;
-    padding: 0 10px;
+	width: 300px;
+  height: 30px;
+  margin: 10px 10px 10px 0;
+  padding: 0 10px;
+}
+.todo{
+	list-style-type: none;
+}
+.todoItem p{
+	display: inline-block;
+}
+
+.todoList, .todoListDone{
+	paddint: 10px;
 }

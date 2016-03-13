@@ -9,7 +9,7 @@ npm install
 node server.js
 ```
 
-打開 <http://localhost:3000/>. 
+打開 <http://localhost:3000/>即可
 
 ## 如何改port
 
