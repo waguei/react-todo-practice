@@ -20,20 +20,20 @@ var TODOS_FILE = path.join(__dirname, 'todos.json');
 
 var ii = 0;
 function filterDone(obj) {
-	if ('done' in obj && obj.done === 'checked' ) {
-		return true;
-	} else {
-		ii++;
-		return false;
-	}
+  if ('done' in obj && obj.done === 'checked' ) {
+    return true;
+  } else {
+    ii++;
+    return false;
+  }
 }
 function filterUnDone(obj) {
-	if ('done' in obj && obj.done === '' ) {
-		return true;
-	} else {
-		ii++;
-		return false;
-	}
+  if ('done' in obj && obj.done === '' ) {
+    return true;
+  } else {
+    ii++;
+    return false;
+  }
 }
 
 app.set('port', (process.env.PORT || 3000));
@@ -58,10 +58,10 @@ app.get('/api/todos', function(req, res) {
     if (err) {
       console.error(err);
       process.exit(1);
-    }		
-		var todos = JSON.parse(data);
-		var newData = todos.filter(filterUnDone);
-		res.json(newData);
+    }   
+    var todos = JSON.parse(data);
+    var newData = todos.filter(filterUnDone);
+    res.json(newData);
   });
 });
 
@@ -70,10 +70,10 @@ app.get('/api/done', function(req, res) {
     if (err) {
       console.error(err);
       process.exit(1);
-    }		
-		var todos = JSON.parse(data);
-		var newData = todos.filter(filterDone);
-		res.json(newData);
+    }   
+    var todos = JSON.parse(data);
+    var newData = todos.filter(filterDone);
+    res.json(newData);
 
   });
 });
@@ -91,7 +91,7 @@ app.post('/api/todos', function(req, res) {
     var newTodo = {
       id: Date.now(),
       text: req.body.text,
-			done: '',
+      done: '',
     };
     todos.push(newTodo);
     fs.writeFile(TODOS_FILE, JSON.stringify(todos, null, 4), function(err) {
@@ -99,8 +99,8 @@ app.post('/api/todos', function(req, res) {
         console.error(err);
         process.exit(1);
       }
-			var newData = todos.filter(filterUnDone);
-			res.json(newData);
+      var newData = todos.filter(filterUnDone);
+      res.json(newData);
     });
   });
 });

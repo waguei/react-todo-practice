@@ -63,22 +63,22 @@ ul {
   padding-left: 30px;
 }
 em{
-	font-weight: bold;
+  font-weight: bold;
 }
 
 .todoInput{
-	width: 300px;
+  width: 300px;
   height: 30px;
   margin: 10px 10px 10px 0;
   padding: 0 10px;
 }
 .todo{
-	list-style-type: none;
+  list-style-type: none;
 }
 .todoItem p{
-	display: inline-block;
+  display: inline-block;
 }
 
 .todoList, .todoListDone{
-	paddint: 10px;
+  paddint: 10px;
 }
