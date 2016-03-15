@@ -18,23 +18,7 @@ var app = express();
 
 var TODOS_FILE = path.join(__dirname, 'todos.json');
 
-var ii = 0;
-function filterDone(obj) {
-  if ('done' in obj && obj.done === 'checked' ) {
-    return true;
-  } else {
-    ii++;
-    return false;
-  }
-}
-function filterUnDone(obj) {
-  if ('done' in obj && obj.done === '' ) {
-    return true;
-  } else {
-    ii++;
-    return false;
-  }
-}
+
 function formatDate(date) {
   var hours = date.getHours();
   var minutes = date.getMinutes();
@@ -71,30 +55,16 @@ app.get('/api/todos', function(req, res) {
     if (err) {
       console.error(err);
       process.exit(1);
-    }   
-    var todos = JSON.parse(data);
-    var newData = todos.filter(filterUnDone);
-    res.json(newData);
-  });
-});
-
-app.get('/api/done', function(req, res) {
-  fs.readFile(TODOS_FILE, function(err, data) {
-    if (err) {
-      console.error(err);
-      process.exit(1);
-    }   
-    var todos = JSON.parse(data);
-    var newData = todos.filter(filterDone);
-    res.json(newData);
-
+    }
+    res.json(JSON.parse(data));
   });
 });
 
 app.post('/api/todos', function(req, res) {
   fs.readFile(TODOS_FILE, function(err, data) {    
     var d = new Date();
-    var e = formatDate(d);
+    var e = formatDate(d);    
+    
     if (err) {
       console.error(err);
       process.exit(1);
@@ -103,6 +73,7 @@ app.post('/api/todos', function(req, res) {
     // NOTE: In a real implementation, we would likely rely on a database or
     // some other approach (e.g. UUIDs) to ensure a globally unique id. We'll
     // treat Date.now() as unique-enough for our purposes.
+    
     var newTodo = {
       id: Date.now(),
       text: req.body.text,
@@ -120,6 +91,45 @@ app.post('/api/todos', function(req, res) {
     });
   });
 });
+
+// app.post('/api/modify', function(req, res) {
+  // fs.readFile(TODOS_FILE, function(err, data) {    
+    // var d = new Date(),
+        // e = formatDate(d),
+        // id = req.body.id,
+        // i = 0,
+        // filterByID = function(obj) {
+          // if ('id' in obj && typeof(obj.id) === 'number' && !isNaN(obj.id) && obj.id === id) {
+            // return true;
+          // } else {
+            // i++;
+            // return false;
+          // }
+        // };
+    // if (err) {
+      // console.error(err);
+      // process.exit(1);
+    // }
+    // var todos = JSON.parse(data);    
+    // var indexs = todos.map(function(obj, index) {
+                   // if(obj.id == id) {
+                     // return index;
+                   // }
+                 // }).filter(isFinite);
+    // var modifiy_todos = todos.filter(filterByID);
+    // modifiy_todos[0].done = "checked";
+    // modifiy_todos[0].done_date = e;
+    // todos.splice(indexs[0],0,modifiy_todos);
+    // fs.writeFile(TODOS_FILE, JSON.stringify(todos, null, 4), function(err) {
+      // if (err) {
+        // console.error(err);
+        // process.exit(1);
+      // }
+      // var newData = todos.filter(filterUnDone);
+      // res.json(newData);
+    // });
+  // });
+// });
 
 
 app.listen(app.get('port'), function() {

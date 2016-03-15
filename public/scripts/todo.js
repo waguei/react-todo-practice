@@ -1,9 +1,44 @@
+var i = 0;
+var filterDone = function(obj) {
+  if ('done' in obj && obj.done === 'checked' ) {
+    return true;
+  } else {
+    i++;
+    return false;
+  }
+}
+
+var filterUnDone = function(obj) {
+  if ('done' in obj && obj.done === '' ) {
+    return true;
+  } else {
+    i++;
+    return false;
+  }
+}
+
 var Todo = React.createClass({
+  // handleTodoCheck: function(){   
+   // var id = this.state.id,
+       // data = {id:id};
+   // $.ajax({
+     // url: '/api/modify',
+     // dataType: 'json',
+     // type: 'POST',
+     // data: data,
+     // success: function(data){
+       // this.setState({data:data});
+     // }.bind(this),
+     // error: function(xhr, status, err){
+       // console.error(this.props.url, status, err.toString());
+     // }.bind(this)
+   // });
+  // },
   getInitialState: function(){
-    return {done:''};
+    return { id: '', done: ''};
   },
   toggleChecked: function(e) {
-    this.setState({ done: e.target.value});
+    this.setState({ id: this.props.id, done: e.target.checked});
   },
   rawMarkup: function(){
     var rawMarkup = marked(this.props.children.toString(), {sanitize:true});
@@ -14,13 +49,15 @@ var Todo = React.createClass({
       <li className="todo">
         <input 
           type="checkbox" 
-          checked={this.state.done || this.props.done } 
+          checked={ this.state.done || this.props.done } 
           onChange={this.toggleChecked}
+          onClick={this.handleTodoCheck}
+          id={this.props.id } 
         />
         <span className="todoItem" dangerouslySetInnerHTML={this.rawMarkup()} />
-        <span className="date">add @ {this.state.date || this.props.date } </span>
+        <span className="date">add @ {this.props.date} </span>
       </li>
-    );
+    );    
   }
 });
 
@@ -31,20 +68,9 @@ var TodoBox = React.createClass({
       dataType: 'json',
       cache: false,
       success: function(data){
-        this.setState({data: data});
-      }.bind(this),
-      error: function(xhr, status, err){
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-  loadDoneTodosFromServer: function(){
-    $.ajax({
-      url: '/api/done',
-      dataType: 'json',
-      cache: false,
-      success: function(data){
-        this.setState({data2: data});
+        var done_todos = data.filter(filterDone);
+        var undone_todos = data.filter(filterUnDone);
+        this.setState({done_todos : done_todos, undone_todos: undone_todos});
       }.bind(this),
       error: function(xhr, status, err){
         console.error(this.props.url, status, err.toString());
@@ -62,28 +88,8 @@ var TodoBox = React.createClass({
       dataType: 'json',
       type: 'POST',
       data: todo,
-      success: function(data){
-        this.setState({data:data});
-      }.bind(this),
-      error: function(xhr, status, err){
-        this.setState({data: todos});
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-  handleTodoCheck: function(todo){
-    var todos = this.state.data;
-    todo.id=Date.now();
-    todo.done='';
-    var newTodos = todos.concat([todo]);
-    this.setState({data: newTodos});
-    $.ajax({
-      url: this.props.url,
-      dataType: 'json',
-      type: 'POST',
-      data: todo,
-      success: function(data){
-        this.setState({data:data});
+      success: function(data){        
+        this.setState({data: data});
       }.bind(this),
       error: function(xhr, status, err){
         this.setState({data: todos});
@@ -92,22 +98,20 @@ var TodoBox = React.createClass({
     });
   },
   getInitialState: function(){
-    return {data: [], data2: []};
+    return {undone_todos: [], done_todos: []};
   },
   componentDidMount: function(){
     this.loadTodosFromServer();
-    this.loadDoneTodosFromServer();
-    setInterval(this.loadTodosFromServer, this.props.pollInterval);
-    setInterval(this.loadDoneTodosFromServer, this.props.pollInterval);
+    //setInterval(this.loadTodosFromServer, this.props.pollInterval);
   },
   render: function(){
     return (
       <div className="todoBox">
-        <TodoForm onTodoSubmit={this.handleTodoSubmit}/>
+        <TodoForm onTodoSubmit={this.handleTodoSubmit} />
         <h2>未做的</h2>
-        <TodoList data = {this.state.data} onTodoCheck={this.handleTodoCheck}/>
+        <TodoList class = "todoList undone_todos" data = {this.state.undone_todos} />
         <h2>做完啦</h2>
-        <TodoDoneList data = {this.state.data2}/>       
+        <TodoList class = "todoList done_todos"  data = {this.state.done_todos} />       
       </div>
     );
   }
@@ -117,30 +121,13 @@ var TodoList = React.createClass({
   render: function(){
     var todoNodes = this.props.data.map(function(todo){
       return (
-        <Todo key={todo.id} done={todo.done} date={todo.date}>
+        <Todo key={todo.id} done={todo.done} date={todo.date} id={todo.id}>
           {todo.text}
         </Todo>
       )
     }).reverse();
     return (
-      <ul className="todoList">
-        {todoNodes}
-      </ul>
-    )
-  }
-});
-
-var TodoDoneList = React.createClass({
-  render: function(){
-    var todoNodes = this.props.data.map(function(todo){
-      return (
-        <Todo key={todo.id} done={todo.done} date={todo.date}>
-          {todo.text}
-        </Todo>
-      )
-    }).reverse();
-    return (
-      <ul className="todoListDone">
+      <ul className= {this.props.class}>
         {todoNodes}
       </ul>
     )
