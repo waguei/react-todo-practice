@@ -17,28 +17,23 @@ var filterUnDone = function(obj) {
   }
 }
 
+var sortByKey = function (array, key) {
+    return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
+}
+
 var Todo = React.createClass({
-  // handleTodoCheck: function(){   
-   // var id = this.state.id,
-       // data = {id:id};
-   // $.ajax({
-     // url: '/api/modify',
-     // dataType: 'json',
-     // type: 'POST',
-     // data: data,
-     // success: function(data){
-       // this.setState({data:data});
-     // }.bind(this),
-     // error: function(xhr, status, err){
-       // console.error(this.props.url, status, err.toString());
-     // }.bind(this)
-   // });
-  // },
   getInitialState: function(){
     return { id: '', done: ''};
   },
   toggleChecked: function(e) {
+    e.preventDefault();    
     this.setState({ id: this.props.id, done: e.target.checked});
+    var id = this.props.id;
+    console.log(id);
+    this.props.onTodoCheck({id:id});
   },
   rawMarkup: function(){
     var rawMarkup = marked(this.props.children.toString(), {sanitize:true});
@@ -52,10 +47,10 @@ var Todo = React.createClass({
           checked={ this.state.done || this.props.done } 
           onChange={this.toggleChecked}
           onClick={this.handleTodoCheck}
-          id={this.props.id } 
+          id={this.props.id} 
         />
         <span className="todoItem" dangerouslySetInnerHTML={this.rawMarkup()} />
-        <span className="date">add @ {this.props.date} </span>
+        <span className="date">add @ {this.props.date} | done @ {this.props.done_date}</span>
       </li>
     );    
   }
@@ -68,9 +63,16 @@ var TodoBox = React.createClass({
       dataType: 'json',
       cache: false,
       success: function(data){
-        var done_todos = data.filter(filterDone);
-        var undone_todos = data.filter(filterUnDone);
-        this.setState({done_todos : done_todos, undone_todos: undone_todos});
+        var done_todos = data.filter(filterDone);       
+        var undone_todos = data.filter(filterUnDone); 
+        sortByKey(done_todos, 'newid');
+        sortByKey(undone_todos, 'id');
+        // for(var i = 0; i < undone_todos.length; i++ ){
+            // undone_todos[i].handle_check = this.handleTodoCheck;
+            //console.log(undone_todos[i]);
+        // }
+        //console.log(undone_todos);
+        this.setState({done_todos : done_todos, undone_todos: undone_todos, data: data});
       }.bind(this),
       error: function(xhr, status, err){
         console.error(this.props.url, status, err.toString());
@@ -79,6 +81,7 @@ var TodoBox = React.createClass({
   },
   handleTodoSubmit: function(todo){
     var todos = this.state.data;
+    console.log(todos);
     todo.id=Date.now();
     todo.done='';
     var newTodos = todos.concat([todo]);
@@ -89,13 +92,45 @@ var TodoBox = React.createClass({
       type: 'POST',
       data: todo,
       success: function(data){        
-        this.setState({data: data});
+        var done_todos = data.filter(filterDone);       
+        var undone_todos = data.filter(filterUnDone);  
+        sortByKey(done_todos, 'newid');
+        sortByKey(undone_todos, 'id');
+        // for(var i = 0; i < undone_todos.length; i++ ){
+            // undone_todos[i].handle_check = this.handleTodoCheck;
+            //console.log(undone_todos[i]);
+        // }
+        //console.log(undone_todos);
+        this.setState({done_todos : done_todos, undone_todos: undone_todos, data: data});
       }.bind(this),
       error: function(xhr, status, err){
         this.setState({data: todos});
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
+  },
+  handleTodoCheck: function(data){   
+   $.ajax({
+     url: '/api/modify',
+     dataType: 'json',
+     type: 'POST',
+     data: data,
+     success: function(data){
+       var done_todos = data.filter(filterDone);       
+        var undone_todos = data.filter(filterUnDone);        
+        // for(var i = 0; i < undone_todos.length; i++ ){
+            // undone_todos[i].handle_check = this.handleTodoCheck;
+            //console.log(undone_todos[i]);
+        // }
+        //console.log(undone_todos);
+        sortByKey(done_todos, 'newid');
+        sortByKey(undone_todos, 'id');
+        this.setState({done_todos : done_todos, undone_todos: undone_todos});
+     }.bind(this),
+     error: function(xhr, status, err){
+       console.error(this.props.url, status, err.toString());
+     }.bind(this)
+   });
   },
   getInitialState: function(){
     return {undone_todos: [], done_todos: []};
@@ -109,7 +144,7 @@ var TodoBox = React.createClass({
       <div className="todoBox">
         <TodoForm onTodoSubmit={this.handleTodoSubmit} />
         <h2>未做的</h2>
-        <TodoList class = "todoList undone_todos" data = {this.state.undone_todos} />
+        <TodoList class = "todoList undone_todos" data = {this.state.undone_todos} onTodoCheck={this.handleTodoCheck} />
         <h2>做完啦</h2>
         <TodoList class = "todoList done_todos"  data = {this.state.done_todos} />       
       </div>
@@ -117,11 +152,15 @@ var TodoBox = React.createClass({
   }
 });
 
-var TodoList = React.createClass({
+var TodoList = React.createClass({  
   render: function(){
+    for(var i = 0; i < this.props.data.length; i++ ){
+        this.props.data[i].handle_check = this.props.onTodoCheck;
+        //console.log(this.props.data[i]);
+    }
     var todoNodes = this.props.data.map(function(todo){
       return (
-        <Todo key={todo.id} done={todo.done} date={todo.date} id={todo.id}>
+        <Todo key={todo.id} done={todo.done} date={todo.date} done_date={todo.done_date} id={todo.id} onTodoCheck={todo.handle_check}>
           {todo.text}
         </Todo>
       )
