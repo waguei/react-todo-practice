@@ -40,8 +40,8 @@ var Todo = React.createClass({
   },
   toggleChecked: function(e) {  
     var checked = (e.target.checked) ? 'checked' : '',
-        id = this.props.id;
-    this.setState({ id: this.props.id, done: checked});
+        id = this.props.data.id;
+    this.setState({ id: id, done: checked});
     this.props.onTodoCheck({ id:id, done: checked });
   },
   rawMarkup: function(){
@@ -49,17 +49,17 @@ var Todo = React.createClass({
     return {__html: rawMarkup} ;
   },
   render: function(){
+    var data = this.props.data;
     return (
       <li className="todo">
         <input 
           type="checkbox" 
-          checked={ this.state.done || this.props.done } 
+          checked={ this.state.done || data.done } 
           onChange={this.toggleChecked}
-          onClick={this.handleTodoCheck}
-          id={this.props.id} 
+          id={data.id} 
         />
         <span className="todoItem" dangerouslySetInnerHTML={this.rawMarkup()} />
-        <DateInfo done_date={this.props.done_date} date={this.props.date}/>
+        <DateInfo done_date={data.done_date} date={data.date}/>
       </li>
     );    
   }
@@ -152,7 +152,7 @@ var TodoList = React.createClass({
     }
     var todoNodes = this.props.data.map(function(todo){
       return (
-        <Todo key={todo.id} done={todo.done} date={todo.date} done_date={todo.done_date} id={todo.id} onTodoCheck={todo.handle_check}>
+        <Todo key={todo.id} data={todo} done={todo.done} date={todo.date} done_date={todo.done_date} id={todo.id} onTodoCheck={todo.handle_check}>
           {todo.text}
         </Todo>
       )
