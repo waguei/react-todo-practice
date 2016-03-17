@@ -24,16 +24,25 @@ var sortByKey = function (array, key) {
     });
 }
 
+var DateInfo = React.createClass({
+    render: function(){
+        return (
+            <span className="dateInfo date">
+                {this.props.done_date ? 'Done @ '+this.props.done_date: 'Add @ '+this.props.date }
+            </span>
+        );
+    }
+});
+
 var Todo = React.createClass({
   getInitialState: function(){
     return { id: '', done: ''};
   },
-  toggleChecked: function(e) {
-    e.preventDefault();    
-    this.setState({ id: this.props.id, done: e.target.checked});
-    var id = this.props.id;
-    console.log(id);
-    this.props.onTodoCheck({id:id});
+  toggleChecked: function(e) {  
+    var checked = (e.target.checked) ? 'checked' : '',
+        id = this.props.id;
+    this.setState({ id: this.props.id, done: checked});
+    this.props.onTodoCheck({ id:id, done: checked });
   },
   rawMarkup: function(){
     var rawMarkup = marked(this.props.children.toString(), {sanitize:true});
@@ -50,7 +59,7 @@ var Todo = React.createClass({
           id={this.props.id} 
         />
         <span className="todoItem" dangerouslySetInnerHTML={this.rawMarkup()} />
-        <span className="date">add @ {this.props.date} | done @ {this.props.done_date}</span>
+        <DateInfo done_date={this.props.done_date} date={this.props.date}/>
       </li>
     );    
   }
@@ -67,11 +76,6 @@ var TodoBox = React.createClass({
         var undone_todos = data.filter(filterUnDone); 
         sortByKey(done_todos, 'newid');
         sortByKey(undone_todos, 'id');
-        // for(var i = 0; i < undone_todos.length; i++ ){
-            // undone_todos[i].handle_check = this.handleTodoCheck;
-            //console.log(undone_todos[i]);
-        // }
-        //console.log(undone_todos);
         this.setState({done_todos : done_todos, undone_todos: undone_todos, data: data});
       }.bind(this),
       error: function(xhr, status, err){
@@ -96,11 +100,6 @@ var TodoBox = React.createClass({
         var undone_todos = data.filter(filterUnDone);  
         sortByKey(done_todos, 'newid');
         sortByKey(undone_todos, 'id');
-        // for(var i = 0; i < undone_todos.length; i++ ){
-            // undone_todos[i].handle_check = this.handleTodoCheck;
-            //console.log(undone_todos[i]);
-        // }
-        //console.log(undone_todos);
         this.setState({done_todos : done_todos, undone_todos: undone_todos, data: data});
       }.bind(this),
       error: function(xhr, status, err){
@@ -118,13 +117,8 @@ var TodoBox = React.createClass({
      success: function(data){
        var done_todos = data.filter(filterDone);       
         var undone_todos = data.filter(filterUnDone);        
-        // for(var i = 0; i < undone_todos.length; i++ ){
-            // undone_todos[i].handle_check = this.handleTodoCheck;
-            //console.log(undone_todos[i]);
-        // }
-        //console.log(undone_todos);
-        sortByKey(done_todos, 'newid');
-        sortByKey(undone_todos, 'id');
+        sortByKey(done_todos, 'newid'); //set done_todos order by newid
+        sortByKey(undone_todos, 'id');  //set undone_todos order by id
         this.setState({done_todos : done_todos, undone_todos: undone_todos});
      }.bind(this),
      error: function(xhr, status, err){
@@ -137,7 +131,6 @@ var TodoBox = React.createClass({
   },
   componentDidMount: function(){
     this.loadTodosFromServer();
-    //setInterval(this.loadTodosFromServer, this.props.pollInterval);
   },
   render: function(){
     return (
@@ -146,7 +139,7 @@ var TodoBox = React.createClass({
         <h2>未做的</h2>
         <TodoList class = "todoList undone_todos" data = {this.state.undone_todos} onTodoCheck={this.handleTodoCheck} />
         <h2>做完啦</h2>
-        <TodoList class = "todoList done_todos"  data = {this.state.done_todos} />       
+        <TodoList class = "todoList done_todos"  data = {this.state.done_todos} onTodoCheck={this.handleTodoCheck}/>       
       </div>
     );
   }
@@ -156,7 +149,6 @@ var TodoList = React.createClass({
   render: function(){
     for(var i = 0; i < this.props.data.length; i++ ){
         this.props.data[i].handle_check = this.props.onTodoCheck;
-        //console.log(this.props.data[i]);
     }
     var todoNodes = this.props.data.map(function(todo){
       return (

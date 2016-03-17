@@ -114,7 +114,8 @@ app.post('/api/todos', function(req, res) {
 
 app.post('/api/modify', function(req, res) {
   fs.readFile(TODOS_FILE, function(err, data) {    
-    var id = parseInt(req.body.id,10),        
+    var id = parseInt(req.body.id,10),  
+        done = req.body.done,      
         i = 0,
         filterByID = function(obj) {
           if ('id' in obj && typeof(obj.id) === 'number' && !isNaN(obj.id) && obj.id === id) {
@@ -137,10 +138,18 @@ app.post('/api/modify', function(req, res) {
     if (id) {              
         var modifiy_todos = todos.filter(filterByID);
         if(modifiy_todos.length > 0){
-            modifiy_todos[0].done = "checked";
-            modifiy_todos[0].newid = Date.now();
-            modifiy_todos[0].done_date = e;
-            todos.splice(indexs[0],1,modifiy_todos[0]); 
+               modifiy_todos[0].done = done;
+            if(done){                
+                modifiy_todos[0].newid = Date.now();
+                modifiy_todos[0].done = done;
+                modifiy_todos[0].done_date = e;            
+            }else{
+                //undone again after done
+                modifiy_todos[0].id = Date.now();
+                modifiy_todos[0].newid = '';
+                modifiy_todos[0].done_date = '';                  
+            }
+            todos.splice(indexs[0],1,modifiy_todos[0]);            
         }
     }  
     fs.writeFile(TODOS_FILE, JSON.stringify(todos, null, 4), function(err) {
